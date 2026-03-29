@@ -6,3 +6,8 @@ edition = "2024"
 [lib]
 
 [dependencies]
+
+[features]
+default = []
+xlen_64 = []
+ext_c = []
