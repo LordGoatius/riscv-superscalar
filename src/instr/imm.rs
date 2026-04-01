@@ -52,7 +52,7 @@ impl Imm for UInstr {
    fn get_imm(self) -> u32 {
         let num = self.get_num();
 
-        num & (0b11111111111111111111 << 12) >> 12
+        num & (0b11111111111111111111 << 12)
    } 
 }
 
@@ -60,10 +60,16 @@ impl Imm for JInstr {
    fn get_imm(self) -> u32 {
         let num = self.get_num();
         let sign_ext = (num & SIGN_EXT_MASK) >> SIGN_EXT_OFFSET;
-        let base = if sign_ext == 1 { 0b11111111111111111111 << 12 } else { 0b0 };
+        let base = if sign_ext == 1 { 0b111111111111 << 20 } else { 0b0 };
 
-        
+        let mid_high = num & (0b11111111 << 12);
 
-        todo!()
+        let mid_bit = (num & (0b1 << 20)) >> 9;
+
+        let mid_low = (num & (0b111111 << 25)) >> (25 - 5);
+
+        let low = (num & (0b1111 << 21)) >> 20;
+
+        base | mid_high | mid_bit | mid_low | low
    } 
 }

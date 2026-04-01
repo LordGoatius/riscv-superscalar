@@ -1,4 +1,5 @@
 pub mod encoding;
+pub mod decoding;
 pub mod imm;
 
 #[derive(Debug, Clone, Copy)]
