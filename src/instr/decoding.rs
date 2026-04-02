@@ -172,8 +172,9 @@ fn decode(instr: u32) -> RV32I {
                 FUNCT3_ORI   => RV32I::Ori,
                 FUNCT3_ANDI  => RV32I::Andi,
                 FUNCT3_SLLI  => RV32I::Slli,
-                FUNCT3_SRLI  => RV32I::Srli,
-                FUNCT3_SRAI  => RV32I::Srai,
+                // This is maybe not ideal, but in software this is preferable I think.
+                FUNCT3_SRLI if (imm & (0b1111111 << 4)) >> 4 == 0x00 => RV32I::Srli,
+                FUNCT3_SRAI if (imm & (0b1111111 << 4)) >> 4 == 0x20 => RV32I::Srai,
                 FUNCT3_SLTI  => RV32I::Slti,
                 FUNCT3_SLTIU => RV32I::Sltiu,
                 _ => { panic!("Illegal Instruction") }
