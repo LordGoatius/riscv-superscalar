@@ -1,6 +1,6 @@
 use crate::XTYPE;
 
 #[repr(transparent)]
-struct Register(XTYPE);
+pub struct Register(XTYPE);
 
 

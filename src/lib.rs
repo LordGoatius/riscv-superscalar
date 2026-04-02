@@ -1,5 +1,6 @@
 pub mod instr;
-pub mod register;
+pub mod fivestage;
+pub mod common;
 
 #[cfg(feature = "xlen_64")]
 const XLEN: usize = 64;
