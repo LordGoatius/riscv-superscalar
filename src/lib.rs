@@ -1,6 +1,10 @@
+#![cfg_attr(feature = "tailcall", feature(explicit_tail_calls))]
+
 pub mod instr;
 pub mod fivestage;
 pub mod common;
+#[cfg(feature = "tailcall")]
+pub mod tailcall;
 
 #[cfg(feature = "xlen_64")]
 const XLEN: usize = 64;

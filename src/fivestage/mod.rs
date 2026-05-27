@@ -7,6 +7,11 @@ use crate::{common::*, instr::decoding::{RV32I, Reg}};
 // 3. Execution
 // 4. Memory
 // 5. Writeback
+//
+// NOTE: I figured it out, I need to rewrite all of this!
+// NOTE(2): Use an index into an array of values needed for each pipeline stage where the index is switched each time,
+// so that the consumer of the previous pipeline stage can guaranteed read the previous stage's output, and the next
+// stage can guaranteed read this stage's input.
 
 pub struct Machine<const MEM_SIZE: usize> {
     registers: [Register; 32],

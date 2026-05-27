@@ -8,6 +8,7 @@ edition = "2024"
 [dependencies]
 
 [features]
-default = []
+default = ["tailcall"]
 xlen_64 = []
 ext_c = []
+tailcall = []

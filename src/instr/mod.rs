@@ -1,6 +1,7 @@
 pub mod encoding;
 pub mod decoding;
 pub mod imm;
+pub use decoding::RV32I;
 
 #[derive(Debug, Clone, Copy)]
 #[repr(transparent)]

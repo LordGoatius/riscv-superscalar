@@ -16,6 +16,7 @@ pub type Reg = u32;
 ///   - rd, rs1, imm
 /// Upper Imm: rd, imm
 /// Env
+#[repr(u32)]
 pub enum RV32I {
     // Arith: rd, rs1, rs2
     Add    (Reg, Reg, Reg),
@@ -66,7 +67,16 @@ pub enum RV32I {
     Aupic  (Reg, u32),
     // Env
     Ecall,
-    Ebreak
+    Ebreak,
+}
+
+impl RV32I {
+    pub(crate) fn disc(&self) -> u32 {
+        // SAFETY: Because `Self` is marked `repr(u32)`, its layout is a `repr(C)` `union`
+        // between `repr(C)` structs, each of which has the `u8` discriminant as its first
+        // field, so we can read the discriminant without offsetting the pointer.
+        unsafe { *<*const _>::from(self).cast::<u32>() }
+    }
 }
 
 const ARITH_OP:  u32 = 0b0110011;
