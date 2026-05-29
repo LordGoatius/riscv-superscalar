@@ -1,17 +1,9 @@
 use crate::{
     instr::RV32I,
-    tailcall::{Machine, Pc},
+    tailcall::{Exception, Machine, MachineResult, Pc, ExceptionType},
 };
 
-pub type Address = u32;
-
-pub enum ExceptionType {
-    IllegalInstr,
-}
-
-pub struct Exception(Address, ExceptionType);
-
-type DispatchFn = fn(&mut Machine, instr: RV32I, pc: Pc) -> Result<Pc, Exception>;
+type DispatchFn = fn(&mut Machine, RV32I, Pc) -> MachineResult;
 
 const TABLE_SIZE: usize = 40;
 
@@ -61,52 +53,52 @@ static TABLE: [DispatchFn; TABLE_SIZE] = [
 
 macro_rules! dispatch_fn {
     (RInstr {$(($name:ident, $enum:ident),)*}) => {
-        $(fn $name (machine: &mut Machine, instr: RV32I, pc: Pc) -> Result<Pc, Exception> {
+        $(fn $name (machine: &mut Machine, instr: RV32I, pc: Pc) -> MachineResult {
             let RV32I::$enum(rd, rs1, rs2) = instr else {
                 return Err(Exception(pc, ExceptionType::IllegalInstr))
             };
-            let pc = machine.$name(rd, rs1, rs2);
-            let next = machine.next(pc).map_err(|err| Exception(pc, err))?;
+            let pc = machine.$name(rd, rs1, rs2, pc)?;
+            let next = machine.next(pc)?;
             become TABLE[next.disc() as usize](machine, next, pc)
         })*
     };
     (IInstr {$(($name:ident, $enum:ident),)*}) => {
-        $(fn $name (machine: &mut Machine, instr: RV32I, pc: Pc) -> Result<Pc, Exception> {
+        $(fn $name (machine: &mut Machine, instr: RV32I, pc: Pc) -> MachineResult {
             let RV32I::$enum(rd, rs1, imm) = instr else {
                 return Err(Exception(pc, ExceptionType::IllegalInstr))
             };
-            let pc = machine.$name(rd, rs1, imm);
-            let next = machine.next(pc).map_err(|err| Exception(pc, err))?;
+            let pc = machine.$name(rd, rs1, imm, pc)?;
+            let next = machine.next(pc)?;
             become TABLE[next.disc() as usize](machine, next, pc)
         })*
     };
     (SBInstr {$(($name:ident, $enum:ident),)*}) => {
-        $(fn $name (machine: &mut Machine, instr: RV32I, pc: Pc) -> Result<Pc, Exception> {
+        $(fn $name (machine: &mut Machine, instr: RV32I, pc: Pc) -> MachineResult {
             let RV32I::$enum(rs1, rs2, imm) = instr else {
                 return Err(Exception(pc, ExceptionType::IllegalInstr))
             };
-            let pc = machine.$name(rs1, rs2, imm);
-            let next = machine.next(pc).map_err(|err| Exception(pc, err))?;
+            let pc = machine.$name(rs1, rs2, imm, pc)?;
+            let next = machine.next(pc)?;
             become TABLE[next.disc() as usize](machine, next, pc)
         })*
     };
     (UJInstr {$(($name:ident, $enum:ident),)*}) => {
-        $(fn $name (machine: &mut Machine, instr: RV32I, pc: Pc) -> Result<Pc, Exception> {
+        $(fn $name (machine: &mut Machine, instr: RV32I, pc: Pc) -> MachineResult {
             let RV32I::$enum(reg, imm) = instr else {
                 return Err(Exception(pc, ExceptionType::IllegalInstr))
             };
-            let pc = machine.$name(reg, imm);
-            let next = machine.next(pc).map_err(|err| Exception(pc, err))?;
+            let pc = machine.$name(reg, imm, pc)?;
+            let next = machine.next(pc)?;
             become TABLE[next.disc() as usize](machine, next, pc)
         })*
     };
     (SysInstr {$(($name:ident, $enum:ident),)*}) => {
-        $(fn $name (machine: &mut Machine, instr: RV32I, pc: Pc) -> Result<Pc, Exception> {
+        $(fn $name (machine: &mut Machine, instr: RV32I, pc: Pc) -> MachineResult {
             let RV32I::$enum = instr else {
                 return Err(Exception(pc, ExceptionType::IllegalInstr))
             };
-            let pc = machine.$name();
-            let next = machine.next(pc).map_err(|err| Exception(pc, err))?;
+            let pc = machine.$name(, pc)?;
+            let next = machine.next(pc)?;
             become TABLE[next.disc() as usize](machine, next, pc)
         })*
     };
@@ -165,8 +157,12 @@ dispatch_fn!(
         (lui  , Lui  ),
         (aupic, Aupic),
     },
-    SysInstr {
-        (ecall , Ecall ),
-        (ebreak, Ebreak),
-    },
 );
+
+fn ecall(machine: &mut Machine, instr: RV32I, pc: Pc) -> MachineResult {
+    todo!()
+}
+
+fn ebreak(machine: &mut Machine, instr: RV32I, pc: Pc) -> MachineResult {
+    todo!()
+}
