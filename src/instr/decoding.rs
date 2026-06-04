@@ -77,6 +77,10 @@ impl RV32I {
         // field, so we can read the discriminant without offsetting the pointer.
         unsafe { *<*const _>::from(self).cast::<u32>() }
     }
+
+    pub(crate) fn index(&self) -> usize {
+        self.disc() as usize
+    }
 }
 
 const ARITH_OP:  u32 = 0b0110011;

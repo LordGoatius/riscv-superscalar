@@ -3,12 +3,22 @@
 pub mod dispatch;
 pub mod registers;
 pub mod ram;
+pub mod csr;
 
-use crate::{instr::{decoding::Reg, *}, tailcall::{ram::Ram, registers::Registers}};
+use crate::{instr::{decoding::Reg, *}, tailcall::{csr::CsrFile, ram::Ram, registers::Registers}};
 
 struct Machine {
     ram: Ram,
     reg: Registers,
+    csrs: Box<CsrFile>,
+}
+
+#[repr(u16)]
+pub enum Privledge {
+    User       = 0b00,
+    Supervisor = 0b01,
+    Hypervisor = 0b10,
+    Machine    = 0b11,
 }
 
 pub type Address = u32;
@@ -219,6 +229,8 @@ impl Machine {
     }
 
     // Env
+    // We set any necessary flags/processor state here, but don't handle the actual
+    // control flow. This is handled through dispatch.
     fn ecall (&mut self, pc: Pc) -> MachineResult { todo!() }
     fn ebreak(&mut self, pc: Pc) -> MachineResult { todo!() }
 }

@@ -7,6 +7,20 @@ type DispatchFn = fn(&mut Machine, RV32I, Pc) -> MachineResult;
 
 const TABLE_SIZE: usize = 40;
 
+fn dispatch_machine(machine: &mut Machine, pc: Pc) -> MachineResult {
+    match machine.next(pc) {
+        Ok(instr) => TABLE[instr.index()](machine, instr, pc),
+        Err(err) => todo!(),
+    }
+}
+
+fn dispatch_exception(machine: &mut Machine, pc: Pc) -> MachineResult {
+    match machine.next(pc) {
+        Ok(instr) => TABLE[instr.index()](machine, instr, pc),
+        Err(err) => todo!(),
+    }
+}
+
 #[used]
 static TABLE: [DispatchFn; TABLE_SIZE] = [
     add,
@@ -59,7 +73,7 @@ macro_rules! dispatch_fn {
             };
             let pc = machine.$name(rd, rs1, rs2, pc)?;
             let next = machine.next(pc)?;
-            become TABLE[next.disc() as usize](machine, next, pc)
+            become TABLE[next.index()](machine, next, pc)
         })*
     };
     (IInstr {$(($name:ident, $enum:ident),)*}) => {
@@ -69,7 +83,7 @@ macro_rules! dispatch_fn {
             };
             let pc = machine.$name(rd, rs1, imm, pc)?;
             let next = machine.next(pc)?;
-            become TABLE[next.disc() as usize](machine, next, pc)
+            become TABLE[next.index()](machine, next, pc)
         })*
     };
     (SBInstr {$(($name:ident, $enum:ident),)*}) => {
@@ -79,7 +93,7 @@ macro_rules! dispatch_fn {
             };
             let pc = machine.$name(rs1, rs2, imm, pc)?;
             let next = machine.next(pc)?;
-            become TABLE[next.disc() as usize](machine, next, pc)
+            become TABLE[next.index()](machine, next, pc)
         })*
     };
     (UJInstr {$(($name:ident, $enum:ident),)*}) => {
@@ -89,7 +103,7 @@ macro_rules! dispatch_fn {
             };
             let pc = machine.$name(reg, imm, pc)?;
             let next = machine.next(pc)?;
-            become TABLE[next.disc() as usize](machine, next, pc)
+            become TABLE[next.index()](machine, next, pc)
         })*
     };
     (SysInstr {$(($name:ident, $enum:ident),)*}) => {
@@ -99,7 +113,7 @@ macro_rules! dispatch_fn {
             };
             let pc = machine.$name(, pc)?;
             let next = machine.next(pc)?;
-            become TABLE[next.disc() as usize](machine, next, pc)
+            become TABLE[next.index()](machine, next, pc)
         })*
     };
     ($($instr:ident { $(($name:ident, $enum:ident),)* }, )*) => {
@@ -160,9 +174,9 @@ dispatch_fn!(
 );
 
 fn ecall(machine: &mut Machine, instr: RV32I, pc: Pc) -> MachineResult {
-    todo!()
+    Err(Exception(pc, ExceptionType::ECall))
 }
 
 fn ebreak(machine: &mut Machine, instr: RV32I, pc: Pc) -> MachineResult {
-    todo!()
+    Err(Exception(pc, ExceptionType::ECall))
 }
